@@ -33,7 +33,7 @@ if __name__ == "__main__":
 
     params = SavableParams(
         Path("./data/MNIST_example.pkl"),
-        every_n_seconds=10,
+        autosave_period=5,
         enable_autosaving=True,
         force_restart=False,
         # Custom parameters here

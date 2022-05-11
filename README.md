@@ -14,14 +14,14 @@ class SavableParams:
     def __init__(
         self,
         save_to: Path,
-        every_n_seconds: int = 900,
+        autosave_period: int = 900,
         enable_autosaving: bool = True,
         force_restart: bool = False,
         **kwargs,
     ):
     """
     save_to: Path - path to the checkpoint
-    every_n_seconds: int - how frequent you want autosave to trigger
+    autosave_period: int - how frequent you want autosave to trigger
     enable_autosaving: bool - turn on/off autosaving option
     force_restart: bool - to start from scratch or to try and load last checkpoint
     **kwargs - all your parameters should be placed here
@@ -35,7 +35,7 @@ Code from [Simple neural network](examples/model_train.py)
 ```python
 params = SavableParams(
     Path("./data/MNIST_example.pkl"),
-    every_n_seconds=10,
+    autosave_period=5,
     enable_autosaving=True,
     force_restart=False,
     # Custom parameters here
