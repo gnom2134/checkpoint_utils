@@ -21,7 +21,7 @@ class SavableParams:
     ):
     """
     save_to: Path - path to the checkpoint
-    autosave_period: int - how frequent you want autosave to trigger
+    autosave_period: int - how frequent you want autosave to trigger (in seconds)
     enable_autosaving: bool - turn on/off autosaving option
     force_restart: bool - to start from scratch or to try and load last checkpoint
     **kwargs - all your parameters should be placed here

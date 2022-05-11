@@ -1,6 +1,6 @@
 import time
 from pathlib import Path
-from threading import Thread
+from threading import Thread, current_thread
 import pickle
 import os
 import logging
@@ -21,7 +21,8 @@ class SavableParams:
         self.__save_path = save_to
         self.__autosaving = enable_autosaving
         self.__autosave_period = autosave_period
-        self.__thread_interrupted = False
+        self.__current_thread = Thread(target=self._run_save_thread, daemon=True)
+        self.__thread_writing = False
         self.__reserved_vars = set(self.__dict__.keys())
 
         for key in kwargs:
@@ -29,7 +30,7 @@ class SavableParams:
         if not force_restart:
             self._load_from(self.__save_path)
         if enable_autosaving:
-            Thread(target=self._run_save_thread, daemon=True).start()
+            self.__current_thread.start()
 
     @property
     def save_path(self):
@@ -45,9 +46,9 @@ class SavableParams:
 
     @autosaving.setter
     def autosaving(self, value: bool):
-        # TODO: Fix potential error with several threads writing checkpoints
         if value and not self.__autosaving:
-            Thread(target=self._run_save_thread, daemon=True).start()
+            self.__current_thread = Thread(target=self._run_save_thread, daemon=True)
+            self.__current_thread.start()
         elif not value and self.__autosaving:
             self.interrupt()
 
@@ -61,26 +62,29 @@ class SavableParams:
     def autosave_period(self, value: int):
         self.__autosave_period = value
 
-    @property
-    def _thread_interrupted(self):
-        return self.__thread_interrupted
-
     def interrupt(self):
-        # TODO: Make it instant
         if not self.__autosaving:
             logger.warning("Interrupt is useless if autosaving option is off")
         else:
-            self.__thread_interrupted = True
+            self.__current_thread.interrupted = True
+            if self.__thread_writing:
+                while self.__thread_writing:
+                    time.sleep(0.1)
 
     def save(self):
+        if self.__current_thread.is_alive():
+            logger.warning("Switching to manual save mode. Autosave disabled. It may take a few moments...")
+            self.autosaving = False
         self._save_to(self.__save_path)
 
     def _run_save_thread(self):
         time.sleep(self.__autosave_period)
-        while not self.__thread_interrupted:
-            inner_thread = Thread(target=self.save, daemon=False)
+        while not getattr(current_thread(), "interrupted", False):
+            self.__thread_writing = True
+            inner_thread = Thread(target=self._save_to, args=[self.__save_path], daemon=False)
             inner_thread.start()
             inner_thread.join()
+            self.__thread_writing = False
             time.sleep(self.__autosave_period)
 
     def _load_from(self, load_path: Path):
@@ -92,12 +96,11 @@ class SavableParams:
                     logger.warning(f"Load failed: {err}")
                     return None
 
-            for key in savable_other.__dict__:
+            for key in savable_other:
                 if key not in self.__reserved_vars:
-                    self.__setattr__(key, savable_other.__dict__[key])
+                    self.__setattr__(key, savable_other[key])
 
     def _save_to(self, save_path: Path):
         with open(save_path, "wb") as file:
-            pickle.dump(self, file)
+            pickle.dump({s: self.__dict__[s] for s in self.__dict__ if s not in self.__reserved_vars}, file)
         logger.info("Object dumped")
-        print("Dumped")
