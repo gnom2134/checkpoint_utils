@@ -8,6 +8,36 @@ Tool is available as PyPI package, so all you need to do is install it with pip:
 pip install checkpoint-utils
 ```
 
+### Getting started
+
+To enable autosaving of variables ```a``` and ```b``` you will need following lines of code:
+
+```python
+from checkpointer import SavableParams
+
+a = 15
+b = {
+    "key1": ["value1", "value2", 3],
+    "key2": None
+}
+
+params = SavableParams(
+    Path("./checkpoints/a_and_b.pkl"),
+    autosave_period=1,
+    enable_autosaving=True,
+    force_restart=False,
+    # Custom parameters here
+    a=a,
+    b=b
+)
+
+# Then you should access variables a and b through params object like that
+params.a = 2
+params.b["key2"] = 3
+```
+
+**Important note**: all links between objects are still exist when checkpoints are loaded, so you can store ```b={"a": a}```.
+
 ### Description
 
 Use ```SavableParams``` class to autosave all params that you need.

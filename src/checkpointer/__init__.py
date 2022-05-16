@@ -1,1 +1,1 @@
-from checkpoint import SavableParams
+from .checkpoint import SavableParams

@@ -72,7 +72,7 @@ class SavableParams:
                     time.sleep(0.1)
 
     def save(self):
-        if self.__current_thread.is_alive():
+        if self.__current_thread.is_alive() or self.autosaving:
             logger.warning("Switching to manual save mode. Autosave disabled. It may take a few moments...")
             self.autosaving = False
         self._save_to(self.__save_path)
