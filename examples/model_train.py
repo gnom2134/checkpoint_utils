@@ -1,6 +1,6 @@
 import torch
 import torchvision
-from src.checkpoint import SavableParams
+from checkpointer import SavableParams
 from pathlib import Path
 
 
