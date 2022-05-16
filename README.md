@@ -1,5 +1,13 @@
 ## Autosave tool
 
+### Installation
+
+Tool is available as PyPI package, so all you need to do is install it with pip:
+
+```shell
+pip install checkpoint-utils
+```
+
 ### Description
 
 Use ```SavableParams``` class to autosave all params that you need.
